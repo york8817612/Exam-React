@@ -4,6 +4,8 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
 import Fab from '@mui/material/Fab';
+import Paper from '@mui/material/Paper';
+import InputBase from '@mui/material/InputBase';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -45,15 +47,28 @@ const fabStyle = {
 };
 
 export default function CRUDQuestionList() {
-    const [count, setCount] = React.useState(0);
-    const [getData, setData] = React.useState([]);
-    const [open, setOpen] = React.useState({ isOpen: false, isAdd: false });
-    const [tempData, setTempData] = React.useState({ id: '', examItemId: '', questionType: 0, text: '', anwserItems: [] });
 
     let params = useParams();
 
+    const [count, setCount] = React.useState(0);
+    const [getData, setData] = React.useState([]);
+    const [open, setOpen] = React.useState({ isOpen: false, isAdd: false });
+    const [tempData, setTempData] = React.useState({ id: '', examItemId: params.id, questionType: 0, text: '', anwserItems: [] });
+
     const handleTextChange = event => {
         setTempData({ id: tempData.id, examItemId: tempData.examItemId, questionType: tempData.questionType, text: event.target.value, anwserItems: tempData.anwserItems });
+    };
+
+    const handleAnwserTextChange = (index, event) => {
+        let anwserItems = tempData.anwserItems;
+        anwserItems[index].text = event.target.value;
+        setTempData({ id: tempData.id, examItemId: tempData.examItemId, questionType: tempData.questionType, text: tempData.text, anwserItems: anwserItems });
+    };
+
+    const handleAnwserCorrectChange = (index, event) => {
+        let anwserItems = tempData.anwserItems;
+        anwserItems[index].correct = event.target.value;
+        setTempData({ id: tempData.id, examItemId: tempData.examItemId, questionType: tempData.questionType, text: tempData.text, anwserItems: anwserItems });
     };
 
     const handleTypeChange = event => {
@@ -62,12 +77,22 @@ export default function CRUDQuestionList() {
 
     const handleClickOpen = (state) => {
         setOpen({ isOpen: true, isAdd: state });
+        if (state) {
+            setTempData({ id: tempData.id, examItemId: tempData.examItemId, questionType: tempData.questionType, text: tempData.text, anwserItems: [] });
+        }
+    };
+
+    const handleSelectSpeedDial = () => {
+        let anwserItems = tempData.anwserItems;
+        anwserItems.push({ text: '', correct: '' });
+        setTempData({ id: tempData.id, examItemId: tempData.examItemId, questionType: tempData.questionType, text: tempData.text, anwserItems: anwserItems });
+        console.log(anwserItems);
     };
 
     const handleClose = (state) => {
         if (!state.isClose) {
             if (state.isAdd) {
-                agent.ExamItems.add(tempData.name, tempData.enable).then((res, err) => {
+                agent.QuestionItems.add(tempData.examItemId, tempData.questionType, tempData.text, tempData.anwserItems).then((res, err) => {
                     if (res) {
                         console.log(res);
                     }
@@ -77,7 +102,7 @@ export default function CRUDQuestionList() {
                 })
                 console.log(`add-${tempData.id}-${tempData.name}-${tempData.enable}`);
             } else {
-                agent.ExamItems.save(tempData).then((res, err) => {
+                agent.QuestionItems.save(tempData).then((res, err) => {
                     if (res) {
                         console.log(res);
                     }
@@ -170,36 +195,64 @@ export default function CRUDQuestionList() {
                         </Select>
                     </FormControl>
                     <TextField
-                        id="examname"
+                        id="questiontext"
                         margin="normal"
                         required
                         fullWidth
                         label="題目內容"
                         multiline
                         minRows={4}
-                        value={tempData.name}
+                        value={tempData.text}
                         autoFocus
                         onChange={handleTextChange}
                     />
                     <Divider />
+                    {tempData.anwserItems.map((aitem, index) => (
+                        <Paper
+                            key={`anwser${index}`}
+                            component="form"
+                            sx={{ p: '2px 4px', m: '4px', display: 'flex', alignItems: 'center' }}
+                        >
+                            <InputBase
+                                sx={{ ml: 1, flex: 1 }}
+                                required
+                                multiline
+                                value={aitem.text}
+                                placeholder="題目選項"
+                                onChange={() => handleAnwserTextChange(index, event)}
+                                inputProps={{ 'aria-label': '題目選項' }}
+                            />
+                            <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
+                            <InputBase
+                                sx={{ ml: 1, flex: 1, w: '50px' }}
+                                required
+                                value={aitem.correct}
+                                placeholder="答案"
+                                onChange={() => handleAnwserCorrectChange(index, event)}
+                                inputProps={{ 'aria-label': '答案' }}
+                            />
+                            <Divider />
+                        </Paper>
+                    ))}
                 </Box>
             </Container>
             <Box sx={fabStyle, { height: 320, transform: 'translateZ(0px)', flexGrow: 1 }}>
-                    <SpeedDial
-                        ariaLabel="SpeedDial openIcon example"
-                        sx={{ position: 'absolute', bottom: 16, right: 16 }}
-                        icon={<SpeedDialIcon openIcon={<EditIcon />} />}
-                    >
-                        {actions.map((action) => (
-                            <SpeedDialAction
-                                key={action.name}
-                                icon={action.icon}
-                                tooltipTitle={action.name}
-                                tooltipOpen
-                            />
-                        ))}
-                    </SpeedDial>
-                </Box>
+                <SpeedDial
+                    ariaLabel="SpeedDial openIcon example"
+                    sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                    icon={<SpeedDialIcon openIcon={<EditIcon />} />}
+                >
+                    {actions.map((action) => (
+                        <SpeedDialAction
+                            key={action.name}
+                            icon={action.icon}
+                            tooltipTitle={action.name}
+                            tooltipOpen
+                            onClick={handleSelectSpeedDial}
+                        />
+                    ))}
+                </SpeedDial>
+            </Box>
         </Dialog>
     );
 
@@ -208,7 +261,7 @@ export default function CRUDQuestionList() {
             <Grid container spacing={2}>
                 <Grid item xs={8}>
                     <Typography component="h2" variant="h6" color="primary" gutterBottom>
-                        <MenuBookIcon color="primary" sx={{ fontSize: 40 }} /> 考試項目列表
+                        <MenuBookIcon color="primary" sx={{ fontSize: 40 }} /> 考試題目列表
                     </Typography>
                 </Grid>
                 <Grid item xs={4} align="right">
