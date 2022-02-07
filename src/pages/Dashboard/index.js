@@ -1,10 +1,11 @@
 import * as React from 'react';
 
-export default function Dashborad() {
-    
+ const Dashborad = () => {
     return (
         <div>
             DASHBOARD
         </div>
      );
 }
+
+export default Dashborad

@@ -14,7 +14,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CachedIcon from '@mui/icons-material/Cached';
 import CreateIcon from '@mui/icons-material/Create';
 
-export default function ExamList() {
+const ExamList = () => {
     const [count, setCount] = React.useState(0);
     const [getData, setData] = React.useState([]);
 
@@ -60,3 +60,5 @@ export default function ExamList() {
         </React.Fragment>
     );
 }
+
+export default ExamList
