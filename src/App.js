@@ -17,12 +17,11 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { mainListItems, secondaryListItems } from './ListItems';
 import { Routes, Route, Link as RouteLink } from "react-router-dom";
 import Dashborad from './pages/Dashboard';
-import CRUDExamList from './pages/CRUDExamList';
-import CRUDQuestionList from './pages/CRUDQuestionList';
-import ExamList from './pages/ExamList';
+import CRUDExamList from './pages/Manage/Exam';
+import CRUDQuestionList from './pages/Manage/Question';
+import ExamList from './pages/Exam';
 import SignIn from './pages/SignIn';
 import NoMatch from './pages/NoMatch';
-import Exam from './pages/Exam';
 
 function Copyright(props) {
   return (
@@ -164,7 +163,6 @@ function App() {
               <Route path="/examlist" element={<ExamList />} />
               <Route path="/history" element={<ExamList />} />
               <Route path="/signin" element={<SignIn />} />
-              <Route path="/exam/:id" element={<Exam />} />
 
               <Route path="/admin/exam" element={<CRUDExamList />} />
               <Route path="/admin/exam/:id" element={<CRUDQuestionList />} />

@@ -1,28 +1,9 @@
 import * as React from 'react';
-import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
-import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
-import { Link as RouteLink } from "react-router-dom";
+import agent from '../../../agent';
+import { ACTION_NONE, ACTION_ADD, ACTION_REMOVE, ACTION_EDIT } from '../constants';
+import List from './components/List';
 import AEDialog from './components/AEDialog';
-import agent from '../agent';
-import { NONE, ADD, REMOVE, EDIT } from '../../../global/actionTypes'
 
-import AddIcon from '@mui/icons-material/Add';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import CachedIcon from '@mui/icons-material/Cached';
-import CreateIcon from '@mui/icons-material/Create';
-
-const fabStyle = {
-    position: 'absolute',
-    bottom: 16,
-    right: 16,
-};
 
 function fetchGetData(setData) {
     agent.ExamItems.list().then((res, err) => {
@@ -35,7 +16,18 @@ function fetchGetData(setData) {
     })
 }
 
-function fetchPostData(setData) {
+function fetchPostData(getSelectData) {
+    agent.ExamItems.add(getSelectData.name, getSelectData.enable).then((res, err) => {
+        if (res) {
+            console.log(res);
+        }
+        if (err) {
+            console.warn(err);
+        }
+    })
+}
+
+function fetchDeleteData(setData) {
     agent.ExamItems.list().then((res, err) => {
         if (res) {
             setData(res);
@@ -46,21 +38,10 @@ function fetchPostData(setData) {
     })
 }
 
-function fetchDelData(setData) {
-    agent.ExamItems.list().then((res, err) => {
+function fetchPutData(getSelectData) {
+    agent.ExamItems.save(getSelectData).then((res, err) => {
         if (res) {
-            setData(res);
-        }
-        if (err) {
-            console.warn(err);
-        }
-    })
-}
-
-function fetchPutData(setData) {
-    agent.ExamItems.list().then((res, err) => {
-        if (res) {
-            setData(res);
+            console.log(res);
         }
         if (err) {
             console.warn(err);
@@ -70,30 +51,32 @@ function fetchPutData(setData) {
 
 const Exam = () => {
     const [getData, setData] = React.useState([]);
+    const [getSelectData, setSelectData] = React.useState([]);
     const [getOpen, setOpen] = React.useState({ isOpen: false, isAdd: false });
-    const submittingStatus = React.useRef(NONE);
+    const submittingStatus = React.useRef(ACTION_NONE);
 
-    const handleClickOpen = (state) => {
-        setOpen({ isOpen: true, isAdd: state });
-    };
-
-    // getData更動時更新
+    // getSelectData及submittingStatus更動時更新
     React.useEffect(() => {
         switch (submittingStatus.current) {
-            case ADD:
-                fetchPostData();
+            case ACTION_ADD:
+                console.log('getSelectData is added');
+                fetchPostData(getSelectData);
                 break;
-            case REMOVE:
-                fetchDelData();
+            case ACTION_REMOVE:
+                console.log('getSelectData is removed');
+                fetchDeleteData(getSelectData);
                 break;
-            case EDIT:
-                fetchPutData();
+            case ACTION_EDIT:
+                console.log('getSelectData is edited');
+                fetchPutData(getSelectData);
                 break;
             default:
+                console.log('getSelectData is change');
                 return;
         }
-        submittingStatus.current = NONE;
-    }, [getData])
+        fetchGetData(setData);
+        submittingStatus.current = ACTION_NONE;
+    }, [getSelectData])
 
     // 頁面重新整理時執行
     React.useEffect(() => {
@@ -101,42 +84,10 @@ const Exam = () => {
     }, []);
 
     return (
-        <React.Fragment>
-            <Grid container spacing={2}>
-                <Grid item xs={8}>
-                    <Typography component="h2" variant="h6" color="primary" gutterBottom>
-                        <MenuBookIcon color="primary" sx={{ fontSize: 40 }} /> 考試項目列表
-                    </Typography>
-                </Grid>
-                <Grid item xs={4} align="right">
-                    <IconButton color="success">
-                        <CachedIcon />
-                    </IconButton>
-                </Grid>
-            </Grid>
-            <Table>
-                <TableBody>
-                    {getData.map((row) => (
-                        <TableRow key={row.id}>
-                            <TableCell>{row.name}</TableCell>
-                            <TableCell align="right">
-                                <Button variant="outlined" color="error" startIcon={<CreateIcon />} onClick={() => {
-                                    handleClickOpen(false);
-                                }} >
-                                    編輯
-                                </Button>
-                                <Button variant="outlined" color="success" startIcon={<CreateIcon />} component={RouteLink} to={`/admin/exam/${row.id}`} >
-                                    題目
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-            <Fab sx={fabStyle} color="primary" aria-label="add" onClick={() => handleClickOpen(true)}>
-                <AddIcon />
-            </Fab>
-        </React.Fragment>
+        <>
+            <List getData={getData} setOpen={setOpen} setSelectData={setSelectData} />
+            <AEDialog getOpen={getOpen} setOpen={setOpen} getSelectData={getSelectData} setSelectData={setSelectData} submittingStatus={submittingStatus} />
+        </>
     );
 }
 

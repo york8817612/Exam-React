@@ -8,7 +8,7 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Link as RouteLink } from "react-router-dom";
-import agent from '../agent';
+import agent from '../../agent';
 
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CachedIcon from '@mui/icons-material/Cached';
